@@ -121,7 +121,8 @@
         süre = 100;
         document.getElementById('timer-bar').style.width = "100%";
         document.getElementById('mesaj').innerText = "";
-
+        document.getElementById('mesaj').style.color = "white"; // Yazı rengini tekrar beyaza döndürür
+        
         const soru = soruHavuzu[Math.floor(Math.random() * soruHavuzu.length)];
         document.getElementById('kategori-etiketi').innerText = soru.kat;
         document.getElementById('soru-metni').innerText = soru.s;
