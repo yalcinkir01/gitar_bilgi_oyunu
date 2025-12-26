@@ -9,6 +9,7 @@
             --primary: #2c3e50;
             --success: #27ae60;
             --danger: #c0392b;
+            --warning: #f39c12;
             --light: #f8f9fa;
         }
 
@@ -24,64 +25,78 @@
             padding: 25px; border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             position: relative;
+            text-align: center;
         }
 
-        .header { display: flex; justify-content: space-between; margin-bottom: 15px; }
-        .type-badge { 
-            background: var(--primary); color: white; 
-            padding: 4px 10px; border-radius: 5px; font-size: 0.8rem; 
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .type-badge { background: var(--primary); color: white; padding: 4px 10px; border-radius: 5px; font-size: 0.8rem; }
+        
+        #timer-box { font-weight: bold; color: var(--danger); font-size: 1.2rem; }
 
         #question-text {
             font-size: 1.1rem; font-weight: bold; color: #333;
-            margin-bottom: 20px; line-height: 1.4;
+            margin: 20px 0; line-height: 1.4; min-height: 60px;
         }
 
         .options-container { display: grid; gap: 10px; }
 
         button.option-btn {
             padding: 15px; border: 2px solid #dee2e6; border-radius: 10px;
-            background: white !important; /* Mobilde temiz renk için */
-            color: #333; font-size: 1rem; cursor: pointer;
+            background: white !important; color: #333; font-size: 1rem; cursor: pointer;
             text-align: left; transition: 0.2s;
             -webkit-tap-highlight-color: transparent; outline: none;
-            user-select: none;
         }
 
-        /* Renk Durumları - !important mobildeki 'yapışkan' renkleri ezer */
         button.option-btn.correct { background: var(--success) !important; color: white !important; border-color: var(--success); }
         button.option-btn.wrong { background: var(--danger) !important; color: white !important; border-color: var(--danger); }
 
-        .controls { margin-top: 20px; }
-        #next-btn, #restart-btn {
-            width: 100%; padding: 15px; border: none; border-radius: 10px;
-            font-weight: bold; font-size: 1rem; cursor: pointer; display: none;
+        #feedback-msg {
+            height: 30px; font-weight: bold; margin-top: 15px; font-size: 1.1rem;
         }
-        #next-btn { background: var(--primary); color: white; }
-        #restart-btn { background: #6c757d; color: white; margin-top: 10px; }
 
-        .score-box { text-align: center; display: none; }
+        .controls { margin-top: 20px; }
+        .main-btn {
+            width: 100%; padding: 15px; border: none; border-radius: 10px;
+            font-weight: bold; font-size: 1.1rem; cursor: pointer; color: white;
+            transition: 0.3s;
+        }
+        #start-btn { background: var(--success); }
+        #next-btn { background: var(--primary); display: none; }
+        #end-btn { background: #6c757d; margin-top: 10px; display: none; }
+        #restart-btn { background: var(--primary); margin-top: 15px; }
+
+        .screen { display: none; }
+        .active { display: block; }
     </style>
 </head>
 <body>
 
 <div class="quiz-card">
-    <div id="game-area">
+    <div id="start-screen" class="screen active">
+        <h1>Gitar Bilgi Yarışması</h1>
+        <p>Her soru için 10 saniyen var!</p>
+        <button id="start-btn" class="main-btn">OYUNU BAŞLAT</button>
+    </div>
+
+    <div id="game-area" class="screen">
         <div class="header">
             <span id="type-badge" class="type-badge">Ünite 1</span>
-            <span id="progress">Yükleniyor...</span>
+            <div id="timer-box">Süre: <span id="time-left">10</span></div>
+            <span id="progress">1/7</span>
         </div>
         <div id="question-text">Soru yükleniyor...</div>
         <div id="options" class="options-container"></div>
+        <div id="feedback-msg"></div>
         <div class="controls">
-            <button id="next-btn">Sonraki Soru</button>
+            <button id="next-btn" class="main-btn">SONRAKİ SORU</button>
+            <button id="end-btn" class="main-btn">TESTİ BİTİR</button>
         </div>
     </div>
 
-    <div id="result-area" class="score-box">
+    <div id="result-area" class="screen">
         <h2>Test Tamamlandı!</h2>
-        <p id="final-score" style="font-size: 1.5rem;"></p>
-        <button id="restart-btn" style="display: block;">Yeniden Başlat</button>
+        <p id="final-score" style="font-size: 1.5rem; font-weight: bold; color: var(--primary);"></p>
+        <button id="restart-btn" class="main-btn">YENİDEN BAŞLAT</button>
     </div>
 </div>
 
@@ -98,32 +113,64 @@
 
     let currentIndex = 0;
     let score = 0;
+    let timeLeft = 10;
+    let timerInterval;
 
+    const startScreen = document.getElementById('start-screen');
     const gameArea = document.getElementById('game-area');
     const resultArea = document.getElementById('result-area');
     const questionEl = document.getElementById('question-text');
     const optionsEl = document.getElementById('options');
+    const feedbackEl = document.getElementById('feedback-msg');
+    const timeLeftEl = document.getElementById('time-left');
     const nextBtn = document.getElementById('next-btn');
-    const progressEl = document.getElementById('progress');
-    const finalScoreEl = document.getElementById('final-score');
+    const endBtn = document.getElementById('end-btn');
+    const startBtn = document.getElementById('start-btn');
     const restartBtn = document.getElementById('restart-btn');
 
+    function startTimer() {
+        timeLeft = 10;
+        timeLeftEl.innerText = timeLeft;
+        timeLeftEl.parentElement.style.color = "var(--danger)";
+        
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timeLeftEl.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                autoWrong(); // Süre bitince otomatik yanlış say
+            }
+        }, 1000);
+    }
+
+    function autoWrong() {
+        const correctAns = SORU_BANKASI[currentIndex].answer;
+        checkAnswer(null, "SÜRE BİTTİ", correctAns);
+    }
+
     function initGame() {
+        // Havuzdan rastgele çağırma (Karıştırma)
         SORU_BANKASI.sort(() => Math.random() - 0.5);
         currentIndex = 0;
         score = 0;
-        gameArea.style.display = 'block';
-        resultArea.style.display = 'none';
+        
+        startScreen.classList.remove('active');
+        resultArea.classList.remove('active');
+        gameArea.classList.add('active');
+        
         loadQuestion();
     }
 
     function loadQuestion() {
         optionsEl.innerHTML = '';
+        feedbackEl.innerText = '';
         nextBtn.style.display = 'none';
+        endBtn.style.display = 'block';
         
         const soru = SORU_BANKASI[currentIndex];
         questionEl.innerText = soru.q;
-        progressEl.innerText = `${currentIndex + 1} / ${SORU_BANKASI.length}`;
+        document.getElementById('progress').innerText = `${currentIndex + 1} / ${SORU_BANKASI.length}`;
         document.getElementById('type-badge').innerText = soru.type;
 
         soru.options.forEach(opt => {
@@ -133,24 +180,33 @@
             btn.onclick = () => checkAnswer(btn, opt, soru.answer);
             optionsEl.appendChild(btn);
         });
+
+        startTimer();
     }
 
     function checkAnswer(btn, selected, correct) {
+        clearInterval(timerInterval);
         const buttons = document.querySelectorAll('.option-btn');
-        btn.blur(); // Mobil odaklamayı temizle
-        
         buttons.forEach(b => b.disabled = true);
 
         if (selected === correct) {
-            btn.classList.add('correct');
+            if(btn) btn.classList.add('correct');
+            feedbackEl.innerText = "Tebrikler! 🎉";
+            feedbackEl.style.color = "var(--success)";
             score++;
         } else {
-            btn.classList.add('wrong');
+            if(btn) btn.classList.add('wrong');
+            feedbackEl.innerText = selected === "SÜRE BİTTİ" ? "Süre Bitti! ⏰" : "Üzgünüm... 😕";
+            feedbackEl.style.color = "var(--danger)";
+            
+            // Doğru olanı göster
             buttons.forEach(b => {
                 if (b.innerText === correct) b.classList.add('correct');
             });
         }
+        
         nextBtn.style.display = 'block';
+        endBtn.style.display = 'none';
     }
 
     nextBtn.onclick = () => {
@@ -162,16 +218,20 @@
         }
     };
 
+    endBtn.onclick = showResult;
+
     function showResult() {
-        gameArea.style.display = 'none';
-        resultArea.style.display = 'block';
-        finalScoreEl.innerText = `Skor: ${score} / ${SORU_BANKASI.length}`;
+        clearInterval(timerInterval);
+        gameArea.classList.remove('active');
+        resultArea.classList.add('active');
+        document.getElementById('final-score').innerText = `Toplam Skor: ${score} / ${SORU_BANKASI.length}`;
     }
 
-    restartBtn.onclick = initGame;
-
-    // Oyunu başlat
-    initGame();
+    startBtn.onclick = initGame;
+    restartBtn.onclick = () => {
+        resultArea.classList.remove('active');
+        startScreen.classList.add('active');
+    };
 </script>
 
 </body>
