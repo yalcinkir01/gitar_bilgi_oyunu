@@ -110,19 +110,83 @@
 <script>
     // Soru Bankası (Kitaptaki tüm türleri içerir)
     const SORU_BANKASI = [
-        // DOĞRU / YANLIŞ
-        { type: "D/Y", q: "Gitarın ses tablası (ön kapağı) genellikle maun gibi sert ağaçlardan yapılır.", options: ["Doğru", "Yanlış"], answer: "Yanlış" },
-        { type: "D/Y", q: "Gitar notasyonunda boş teller '0' (sıfır) rakamıyla gösterilir.", options: ["Doğru", "Yanlış"], answer: "Doğru" },
-        { type: "D/Y", q: "Sağ elin baş parmağı notasyonda 'i' harfiyle gösterilir.", options: ["Doğru", "Yanlış"], answer: "Yanlış" },
-        
-        // BOŞLUK DOLDURMA (Çoktan Seçmeliye uyarlandı)
-        { type: "BOŞLUK", q: "Müzik yazılarında bir dakika içindeki vuruş değerini ölçen birime ____ denir.", options: ["Metronom", "Ritim", "BPM", "Vuruş"], answer: "Metronom" },
-        { type: "BOŞLUK", q: "Gitar klavyesinde 1. perde, boş telin bir ____ tizini verir.", options: ["Tam Ses", "Oktav", "Yarım Ses", "Aralık"], answer: "Yarım Ses" },
-        
-        // ÇOKTAN SEÇMELİ
-        { type: "TEST", q: "Tampere sisteme göre hangi iki nota arası yarım aralıktır?", options: ["do-re / mi-fa", "si-do / fa-sol", "mi-fa / si-do", "re-mi / la-si"], answer: "mi-fa / si-do" },
-        { type: "TEST", q: "Gitarın en kalın teli (6. tel) hangi harf ile temsil edilir?", options: ["A", "B", "D", "E"], answer: "E" }
-    ];
+    // --- DOĞRU / YANLIŞ SORULARI ---
+    { 
+        type: "D/Y", 
+        q: "Gitarın ses tablası (ön kapağı) genellikle maun gibi sert ağaçlardan yapılır.", 
+        options: ["Doğru", "Yanlış"], 
+        answer: "Yanlış" // Not: Genellikle ladin veya sedir gibi yumuşak ağaçlardan yapılır.
+    },
+    { 
+        type: "D/Y", 
+        q: "Gitar notasyonunda boş teller '0' (sıfır) rakamıyla gösterilir.", 
+        options: ["Doğru", "Yanlış"], 
+        answer: "Doğru" 
+    },
+    { 
+        type: "D/Y", 
+        q: "Gitar klavyesinde mi-fa ve si-do aralıkları yarım ses mesafededir.", 
+        options: ["Doğru", "Yanlış"], 
+        answer: "Doğru" 
+    },
+    { 
+        type: "D/Y", 
+        q: "Akort aleti ile akort ederken si notasına karşılık gelen harf B'dir.", 
+        options: ["Doğru", "Yanlış"], 
+        answer: "Doğru" 
+    },
+
+    // --- BOŞLUK DOLDURMA SORULARI (Teste Dönüştürüldü) ---
+    { 
+        type: "BOŞLUK", 
+        q: "Müzik yazılarında bir dakika içindeki vuruş değerini ölçen birime ne denir?", 
+        options: ["Metronom", "Ritim", "BPM", "Vuruş"], 
+        answer: "Metronom" 
+    },
+    { 
+        type: "BOŞLUK", 
+        q: "Gitarın sap bölümünde dayanıklı ağaçlar tercih edilir ve üzerine ____ ağacı giydirilerek tuşe oluşturulur.", 
+        options: ["Gürgen", "Abanoz", "Meşe", "Çam"], 
+        answer: "Abanoz" 
+    },
+    { 
+        type: "BOŞLUK", 
+        q: "Gitar notasyonunda klavye üzerindeki perdeler ____ rakamlarıyla gösterilmektedir.", 
+        options: ["Arap", "Roma", "Latin", "Sümer"], 
+        answer: "Roma" 
+    },
+
+    // --- ÇOKTAN SEÇMELİ SORULAR ---
+    { 
+        type: "ÇOKTAN SEÇMELİ", 
+        q: "Aşağıdaki seçeneklerden hangisi gitarın altıncı (en kalın) telini simgeler?", 
+        options: ["a", "IV", "i", "⑥"], 
+        answer: "⑥" 
+    },
+    { 
+        type: "ÇOKTAN SEÇMELİ", 
+        q: "Gitarın tellerini 6. telden 1'e doğru sıralarsak doğru isimler ne olur?", 
+        options: [
+            "mi-si-re-sol-la-mi", 
+            "mi-la-re-sol-si-mi", 
+            "mi-sol-si-re-la-mi", 
+            "mi-la-fa-sol-do-mi"
+        ], 
+        answer: "mi-la-re-sol-si-mi" 
+    },
+    { 
+        type: "ÇOKTAN SEÇMELİ", 
+        q: "Allegro hız terimi hangi BPM aralığına karşılık gelir?", 
+        options: ["40-60 bpm", "76-108 bpm", "108-120 bpm", "120-168 bpm"], 
+        answer: "120-168 bpm" 
+    },
+    { 
+        type: "ÇOKTAN SEÇMELİ", 
+        q: "Gitarın en kalın teli olan 6. telin (mi) harf karşılığı nedir?", 
+        options: ["A", "B", "D", "E", "G"], 
+        answer: "E" 
+    }
+];
 
     let currentIndex = 0;
     let score = 0;
