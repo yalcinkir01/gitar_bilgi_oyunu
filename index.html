@@ -135,19 +135,23 @@
     }
 
     function checkAnswer(btn, selected, correct) {
-        const buttons = document.querySelectorAll('.option-btn');
-        buttons.forEach(b => b.disabled = true); // Tekrar tıklamayı engelle
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    
+    // Tıklandığı anda odaklanmayı kaldır (Mobil için kritik)
+    btn.blur(); 
 
-        if (selected === correct) {
-            btn.classList.add('correct');
-            score++;
-        } else {
-            btn.classList.add('wrong');
-            // Doğru cevabı her zaman göster
-            buttons.forEach(b => {
-                if (b.innerText === correct) b.classList.add('correct');
-            });
-        }
+    if (selected === correct) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        buttons.forEach(b => {
+            if (b.innerText === correct) b.classList.add('correct');
+        });
+    }
+    nextBtn.style.display = 'block';
+}
         nextBtn.style.display = 'block';
     }
 
