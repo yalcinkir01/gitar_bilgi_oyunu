@@ -3,179 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gitar Akademisi Pro</title>
+    <title>Bilgi Yarışması</title>
     <style>
-        body { font-family: sans-serif; background: #1a1a2e; color: white; text-align: center; margin: 0; padding: 10px; }
-        .container { max-width: 800px; margin: auto; background: #16213e; padding: 25px; border-radius: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); position: relative; min-height: 600px; }
-        .header-panel { display: flex; justify-content: space-around; background: #0f3460; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        .stat span { color: #ffba08; font-size: 24px; font-weight: bold; }
-        #soru-alani { background: #0f3460; padding: 30px; border-radius: 20px; margin-bottom: 20px; border: 3px solid #e94560; min-height: 180px; display: flex; flex-direction: column; justify-content: center; position: relative; }
-        #kategori-etiketi { font-size: 14px; color: #4eeaf6; text-transform: uppercase; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; }
-        #soru-metni { font-size: 20px; font-weight: bold; line-height: 1.5; }
-        #timer-container { position: absolute; bottom: 0; left: 0; width: 100%; height: 10px; background: #222; }
-        #timer-bar { height: 100%; width: 100%; background: #4eeaf6; transition: width 0.1s linear; }
-        .options-container { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        @media (min-width: 500px) { .options-container { grid-template-columns: 1fr 1fr; } }
-        .btn-secenek { padding: 16px; font-size: 16px; font-weight: bold; cursor: pointer; border: 2px solid #533483; border-radius: 12px; background: #1f4068; color: white; transition: 0.2s; }
-        .btn-secenek:hover:not(:disabled) { background: #e94560; transform: translateY(-3px); }
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 26, 46, 0.98); z-index: 1000; border-radius: 25px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        .btn-main { padding: 20px 60px; font-size: 28px; background: #2ecc71; color: white; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; }
-        .btn-finish { margin-top: 20px; background: #e94560; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        :root {
+            --primary: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+        }
+
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; background: #f4f4f4; }
+        .quiz-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        
+        button {
+            padding: 15px;
+            border: 2px solid var(--primary);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            /* Mobildeki mavi tıklama gölgesini ve takılmaları önlemek için: */
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        /* Doğru Cevap Stili */
+        button.dogru {
+            background-color: var(--success) !important;
+            color: white;
+            border-color: var(--success);
+        }
+
+        /* Yanlış Cevap Stili */
+        button.yanlis {
+            background-color: var(--danger) !important;
+            color: white;
+            border-color: var(--danger);
+        }
+
+        button:disabled { cursor: not-allowed; }
+        
+        #next-btn { 
+            width: 100%; margin-top: 20px; padding: 10px; 
+            background: var(--primary); color: white; border: none; display: none; 
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="overlay">
-        <h1 style="color:#ffba08; font-size: 36px; margin-bottom: 10px;">Gitar Akademisi</h1>
-        <p style="margin-bottom: 30px;">Tarih, Akort ve Ritim Uzmanlık Testi</p>
-        <button class="btn-main" onclick="oyunuBaslat()">BAŞLA</button>
-    </div>
-
-    <div class="header-panel">
-        <div class="stat">Puan: <span id="puan">0</span></div>
-        <div class="stat">Hak: <span id="hak">3</span></div>
-    </div>
-
-    <div id="soru-alani">
-        <div id="kategori-etiketi">Kategori</div>
-        <div id="soru-metni">Yükleniyor...</div>
-        <div id="timer-container"><div id="timer-bar"></div></div>
-    </div>
-
-    <div class="options-container" id="siklar-alani"></div>
-    <div id="mesaj" style="margin-top:20px; font-weight:bold; min-height: 25px;"></div>
-    
-    <button class="btn-finish" onclick="oyunuBitir()">OYUNU BİTİR</button>
+<div class="quiz-container">
+    <div id="question">Soru buraya gelecek?</div>
+    <div id="answer-buttons" class="btn-grid">
+        </div>
+    <button id="next-btn">Sonraki Soru</button>
 </div>
 
 <script>
-    let puan = 0, hak = 3, süre = 100, zamanlayıcı, audioCtx;
-    
-    const soruHavuzu = [
-        // Akort Kategorisi (Her tel için bir soru) 
-        { kat: "Akort Bilgisi", s: "Gitarın 1. teli (en ince) hangi notadır ve harf karşılığı nedir?", d: "Mi (E)", y: ["Si (B)", "Sol (G)", "La (A)", "Re (D)"] },
-        { kat: "Akort Bilgisi", s: "Gitarın 2. teli hangi notadır ve harf karşılığı nedir?", d: "Si (B)", y: ["Mi (E)", "Sol (G)", "Re (D)", "La (A)"] },
-        { kat: "Akort Bilgisi", s: "Gitarın 3. teli hangi notadır ve harf karşılığı nedir?", d: "Sol (G)", y: ["Mi (E)", "Si (B)", "La (A)", "Do (C)"] },
-        { kat: "Akort Bilgisi", s: "Gitarın 4. teli hangi notadır ve harf karşılığı nedir?", d: "Re (D)", y: ["La (A)", "Sol (G)", "Mi (E)", "Si (B)"] },
-        { kat: "Akort Bilgisi", s: "Gitarın 5. teli hangi notadır ve harf karşılığı nedir?", d: "La (A)", y: ["Re (D)", "Mi (E)", "Si (B)", "Sol (G)"] },
-        { kat: "Akort Bilgisi", s: "Gitarın 6. teli (en kalın) hangi notadır ve harf karşılığı nedir?", d: "Mi (E)", y: ["La (A)", "Re (D)", "Sol (G)", "Do (C)"] },
+    const questionElement = document.getElementById('question');
+    const answerButtonsElement = document.getElementById('answer-buttons');
+    const nextButton = document.getElementById('next-btn');
 
-        // Metronom Kategorisi (Her kategori için bir soru) 
-        { kat: "Hız Terimleri", s: "'Largo' hız terimi hangi BPM aralığını temsil eder?", d: "40-60", y: ["60-76", "76-108", "108-120", "120-168"] },
-        { kat: "Hız Terimleri", s: "'Adagio' hız terimi hangi BPM aralığını temsil eder?", d: "60-76", y: ["40-60", "76-108", "108-120", "168-192"] },
-        { kat: "Hız Terimleri", s: "'Andante' hız terimi hangi BPM aralığını temsil eder?", d: "76-108", y: ["60-76", "108-120", "120-168", "192-208"] },
-        { kat: "Hız Terimleri", s: "'Moderato' hız terimi hangi BPM aralığını temsil eder?", d: "108-120", y: ["76-108", "120-168", "40-60", "192-208"] },
-        { kat: "Hız Terimleri", s: "'Allegro' hız terimi hangi BPM aralığını temsil eder?", d: "120-168", y: ["108-120", "168-192", "76-108", "40-60"] },
-        { kat: "Hız Terimleri", s: "'Presto' hız terimi hangi BPM aralığını temsil eder?", d: "168-192", y: ["120-168", "192-208", "108-120", "60-76"] },
-        { kat: "Hız Terimleri", s: "'Prestissimo' hız terimi hangi BPM aralığını temsil eder?", d: "192-208", y: ["168-192", "120-168", "40-60", "76-108"] },
-
-        // Tarihsel Enstrümanlar Kategorisi [cite: 55, 64-66, 89-114]
-        { kat: "Gitar Tarihi", s: "Antik Mısır'da görülen ve gitara benzerliğiyle dikkat çeken çalgı hangisidir?", d: "Nefer", y: ["Pandora", "Hitit Çalgısı", "Kithara", "Vihuela"] },
-        { kat: "Gitar Tarihi", s: "Hititlere ait taş kabartmalarda görülen çalgının adı nedir?", d: "Hitit Çalgısı", y: ["Nefer", "Pandora", "Lavta", "Barok Gitar"] },
-        { kat: "Gitar Tarihi", s: "Antik Yunan kültürüne ait üç telli kordofon hangisidir?", d: "Pandora", y: ["Kithara", "Nefer", "Ut", "Lavta"] },
-        { kat: "Gitar Tarihi", s: "Endülüs ve Haçlı Seferleri ile Avrupa'ya taşınan enstrüman hangisidir?", d: "Lavta", y: ["Romantik Gitar", "Piyano", "Arp", "Lir"] },
-        { kat: "Gitar Tarihi", s: "15. ve 16. yüzyılda İspanya'da yaygın olan çalgı hangisidir?", d: "Vihuela", y: ["Barok Gitar", "Rönesans Gitarı", "Ut", "Torres Gitarı"] },
-        { kat: "Gitar Tarihi", s: "17. yüzyılda saraylarda çalınan beş çift telli gitar türü hangisidir?", d: "Barok Gitar", y: ["Romantik Gitar", "Torres Gitarı", "Vihuela", "Elektro Gitar"] },
-        { kat: "Gitar Tarihi", s: "18. yüzyıl sonunda 6 tek telli sisteme geçilerek doğan gitar hangisidir?", d: "Romantik Gitar", y: ["Barok Gitar", "Bas Gitar", "Torres Gitarı", "Vihuela"] },
-        { kat: "Gitar Tarihi", s: "Modern klasik gitarın standart yapısını 19. yüzyılda kim oluşturmuştur?", d: "Antonio de Torres", y: ["Julian Arcas", "Les Paul", "George Beauchamp", "Paul Tutmarc"] },
-        { kat: "Gitar Tarihi", s: "İlk elektro gitar kim tarafından icat edilmiştir?", d: "George Beauchamp", y: ["Les Paul", "Antonio de Torres", "Paul Tutmarc", "Tolgahan Çoğulu"] },
-        { kat: "Gitar Tarihi", s: "Modern bas gitarın geliştirilmesine öncülük eden mucit kimdir?", d: "Paul Tutmarc", y: ["George Beauchamp", "Les Paul", "August Otto", "Jakop August"] },
-        { kat: "Gitar Tarihi", s: "2009 yılında mikrotonal gitarı geliştiren müzisyenimiz kimdir?", d: "Tolgahan Çoğulu", y: ["Hulyan Arkas", "Viktor Maiyon", "Erik Morits", "Sultan Lavta"] }
+    let questions = [
+        { q: "Gökyüzü ne renktir?", a: [ {t: "Mavi", c: true}, {t: "Yeşil", c: false}, {t: "Kırmızı", c: false}, {t: "Sarı", c: false} ] },
+        { q: "2 + 2 kaçtır?", a: [ {t: "3", c: false}, {t: "4", c: true}, {t: "5", c: false}, {t: "22", c: false} ] }
     ];
 
-    function initAudio() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let currentQuestionIndex = 0;
+
+    function startGame() {
+        currentQuestionIndex = 0;
+        showQuestion();
     }
 
-    function sesCal(dogru) {
-        initAudio();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        if (dogru) {
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // İnce ses
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    function showQuestion() {
+        durumuSifirla(); // Önceki sorudan kalan renkleri temizle!
+        let currentQuestion = questions[currentQuestionIndex];
+        questionElement.innerText = currentQuestion.q;
+
+        currentQuestion.a.forEach(answer => {
+            const button = document.createElement('button');
+            button.innerText = answer.t;
+            if (answer.c) button.dataset.correct = answer.c; // Doğru cevabı işaretle
+            button.addEventListener('click', selectAnswer);
+            answerButtonsElement.appendChild(button);
+        });
+    }
+
+    function durumuSifirla() {
+        nextButton.style.display = 'none';
+        while (answerButtonsElement.firstChild) {
+            answerButtonsElement.removeChild(answerButtonsElement.firstChild);
+        }
+        // Mobildeki "kırmızı kalma" sorununu çözen esas kısım burasıdır.
+        // Butonlar her seferinde silinip yeniden oluşturulduğu için eski classlar kalmaz.
+    }
+
+    function selectAnswer(e) {
+        const selectedButton = e.target;
+        const isCorrect = selectedButton.dataset.correct === "true";
+
+        // 1. Tıklanan butonu renklendir
+        if (isCorrect) {
+            selectedButton.classList.add('dogru');
         } else {
-            osc.frequency.setValueAtTime(220, audioCtx.currentTime); // Kalın ses
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            selectedButton.classList.add('yanlis');
+        }
+
+        // 2. Doğru cevabın neden gösterilmediği sorusunun çözümü:
+        // Kullanıcı yanlış bilse bile tüm butonları kontrol et ve doğru olanı göster
+        Array.from(answerButtonsElement.children).forEach(button => {
+            if (button.dataset.correct === "true") {
+                button.classList.add('dogru'); // Her durumda doğru cevabı yeşil yap
+            }
+            button.disabled = true; // Tekrar tıklanmasın
+        });
+
+        if (questions.length > currentQuestionIndex + 1) {
+            nextButton.style.display = 'block';
+        } else {
+            nextButton.innerText = "Yeniden Başlat";
+            nextButton.style.display = 'block';
         }
     }
 
-    function oyunuBaslat() {
-        initAudio();
-        document.getElementById('overlay').style.display = 'none';
-        puan = 0; hak = 3;
-        document.getElementById('puan').innerText = puan;
-        document.getElementById('hak').innerText = hak;
-        yeniSoru();
-    }
+    nextButton.addEventListener('click', () => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            showQuestion();
+        } else {
+            startGame();
+        }
+    });
 
-    function yeniSoru() {
-        if (hak <= 0) return;
-        clearInterval(zamanlayıcı);
-        süre = 100;
-        document.getElementById('timer-bar').style.width = "100%";
-        document.getElementById('mesaj').innerText = "";
-        document.getElementById('mesaj').style.color = "white"; // Yazı rengini tekrar beyaza döndürür
-        
-        const soru = soruHavuzu[Math.floor(Math.random() * soruHavuzu.length)];
-        document.getElementById('kategori-etiketi').innerText = soru.kat;
-        document.getElementById('soru-metni').innerText = soru.s;
-
-        const alan = document.getElementById('siklar-alani');
-        alan.innerHTML = "";
-        let siklar = [soru.d, ...soru.y].sort(() => Math.random() - 0.5);
-
-        siklar.forEach(s => {
-            const btn = document.createElement('button');
-            btn.className = 'btn-secenek';
-            btn.innerText = s;
-            btn.onclick = () => {
-                if (s === soru.d) {
-                    puan += 10;
-                    document.getElementById('puan').innerText = puan;
-                    document.getElementById('mesaj').innerText = "DOĞRU! ✅";
-                    document.getElementById('mesaj').style.color = "#2ecc71";
-                    sesCal(true);
-                } else {
-                    hak--;
-                    document.getElementById('hak').innerText = hak;
-                    document.getElementById('mesaj').innerText = "YANLIŞ! ❌";
-                    document.getElementById('mesaj').style.color = "#e94560";
-                    sesCal(false);
-                }
-                clearInterval(zamanlayıcı);
-                setTimeout(hak > 0 ? yeniSoru : oyunuBitir, 1200);
-            };
-            alan.appendChild(btn);
-        });
-
-        zamanlayıcı = setInterval(() => {
-            süre--;
-            document.getElementById('timer-bar').style.width = süre + "%";
-            if (süre <= 0) {
-                hak--;
-                document.getElementById('hak').innerText = hak;
-                sesCal(false);
-                if (hak > 0) yeniSoru(); else oyunuBitir();
-            }
-        }, 100);
-    }
-
-    function oyunuBitir() {
-        clearInterval(zamanlayıcı);
-        document.getElementById('overlay').style.display = 'flex';
-        document.getElementById('overlay').innerHTML = `
-            <h1 style="color:#e94560">Oyun Bitti!</h1>
-            <p style="font-size:24px">Toplam Puan: ${puan}</p>
-            <button class="btn-main" onclick="location.reload()" style="margin-top:20px">YENİDEN DENE</button>
-        `;
-    }
+    startGame();
 </script>
+
 </body>
 </html>
