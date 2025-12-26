@@ -3,39 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gitar Teorisi ve Kültür Atlası</title>
+    <title>Gitar Akademisi Pro</title>
     <style>
         body { font-family: sans-serif; background: #1a1a2e; color: white; text-align: center; margin: 0; padding: 10px; }
-        .container { max-width: 750px; margin: auto; background: #16213e; padding: 25px; border-radius: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); position: relative; min-height: 550px; }
-        
+        .container { max-width: 800px; margin: auto; background: #16213e; padding: 25px; border-radius: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); position: relative; min-height: 600px; }
         .header-panel { display: flex; justify-content: space-around; background: #0f3460; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
         .stat span { color: #ffba08; font-size: 24px; font-weight: bold; }
-
-        #soru-alani { background: #0f3460; padding: 30px; border-radius: 20px; margin-bottom: 20px; border: 3px solid #e94560; min-height: 160px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+        #soru-alani { background: #0f3460; padding: 30px; border-radius: 20px; margin-bottom: 20px; border: 3px solid #e94560; min-height: 180px; display: flex; flex-direction: column; justify-content: center; position: relative; }
         #kategori-etiketi { font-size: 14px; color: #4eeaf6; text-transform: uppercase; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; }
-        #soru-metni { font-size: 22px; font-weight: bold; line-height: 1.5; }
-
+        #soru-metni { font-size: 20px; font-weight: bold; line-height: 1.5; }
         #timer-container { position: absolute; bottom: 0; left: 0; width: 100%; height: 10px; background: #222; }
         #timer-bar { height: 100%; width: 100%; background: #4eeaf6; transition: width 0.1s linear; }
-
         .options-container { display: grid; grid-template-columns: 1fr; gap: 12px; }
         @media (min-width: 500px) { .options-container { grid-template-columns: 1fr 1fr; } }
-        
-        .btn-secenek { padding: 16px; font-size: 18px; font-weight: bold; cursor: pointer; border: 2px solid #533483; border-radius: 12px; background: #1f4068; color: white; transition: 0.2s; }
-        .btn-secenek:hover:not(:disabled) { background: #e94560; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(233, 69, 96, 0.3); }
-        .btn-secenek:disabled { opacity: 0.6; }
-
+        .btn-secenek { padding: 16px; font-size: 16px; font-weight: bold; cursor: pointer; border: 2px solid #533483; border-radius: 12px; background: #1f4068; color: white; transition: 0.2s; }
+        .btn-secenek:hover:not(:disabled) { background: #e94560; transform: translateY(-3px); }
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 26, 46, 0.98); z-index: 1000; border-radius: 25px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        .btn-main { padding: 20px 60px; font-size: 28px; background: #2ecc71; color: white; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3); }
-        .btn-finish { margin-top: 20px; background: #e94560; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-main { padding: 20px 60px; font-size: 28px; background: #2ecc71; color: white; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; }
+        .btn-finish { margin-top: 20px; background: #e94560; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="overlay">
-        <h1 style="color:#ffba08; font-size: 38px; margin-bottom: 10px;">Teori & Kültür Akademisi</h1>
-        <p style="margin-bottom: 30px; font-size: 18px;">Gitarın tarihini, şifrelerini ve ritmini keşfet!</p>
+        <h1 style="color:#ffba08; font-size: 36px; margin-bottom: 10px;">Gitar Akademisi</h1>
+        <p style="margin-bottom: 30px;">Tarih, Akort ve Ritim Uzmanlık Testi</p>
         <button class="btn-main" onclick="oyunuBaslat()">BAŞLA</button>
     </div>
 
@@ -52,15 +45,136 @@
 
     <div class="options-container" id="siklar-alani"></div>
     <div id="mesaj" style="margin-top:20px; font-weight:bold; min-height: 25px;"></div>
-
+    
     <button class="btn-finish" onclick="oyunuBitir()">OYUNU BİTİR</button>
 </div>
 
 <script>
-    let puan = 0, hak = 3, soruIndex = 0, süre = 100, zamanlayıcı;
+    let puan = 0, hak = 3, süre = 100, zamanlayıcı, audioCtx;
     
     const soruHavuzu = [
-        // Kültürel Köken Kategorisi
-        { kat: "Kültür Atlası", s: "Antik Mısır kültürüne ait duvar resimlerinde görülen en eski kordofonlardan biri hangisidir?", d: "Nefer", y: ["Pandora", "Lavta", "Vihuela", "Kithara"] },
-        { kat: "Kültür Atlası", s: "Antik Yunan kültürüne ait heykellerde görülen üç telli çalgı hangisidir?", d: "Pandora", y: ["Nefer", "Ut", "Rönesans Gitarı", "Barok Gitar"] },
-        { kat: "Kültür Atlası", s: "Gitar günümüzde hangi toplumun 'halk çalgısı' olarak kabul edilmektedir?", d: "İspanya
+        // Akort Kategorisi (Her tel için bir soru) 
+        { kat: "Akort Bilgisi", s: "Gitarın 1. teli (en ince) hangi notadır ve harf karşılığı nedir?", d: "Mi (E)", y: ["Si (B)", "Sol (G)", "La (A)", "Re (D)"] },
+        { kat: "Akort Bilgisi", s: "Gitarın 2. teli hangi notadır ve harf karşılığı nedir?", d: "Si (B)", y: ["Mi (E)", "Sol (G)", "Re (D)", "La (A)"] },
+        { kat: "Akort Bilgisi", s: "Gitarın 3. teli hangi notadır ve harf karşılığı nedir?", d: "Sol (G)", y: ["Mi (E)", "Si (B)", "La (A)", "Do (C)"] },
+        { kat: "Akort Bilgisi", s: "Gitarın 4. teli hangi notadır ve harf karşılığı nedir?", d: "Re (D)", y: ["La (A)", "Sol (G)", "Mi (E)", "Si (B)"] },
+        { kat: "Akort Bilgisi", s: "Gitarın 5. teli hangi notadır ve harf karşılığı nedir?", d: "La (A)", y: ["Re (D)", "Mi (E)", "Si (B)", "Sol (G)"] },
+        { kat: "Akort Bilgisi", s: "Gitarın 6. teli (en kalın) hangi notadır ve harf karşılığı nedir?", d: "Mi (E)", y: ["La (A)", "Re (D)", "Sol (G)", "Do (C)"] },
+
+        // Metronom Kategorisi (Her kategori için bir soru) 
+        { kat: "Hız Terimleri", s: "'Largo' hız terimi hangi BPM aralığını temsil eder?", d: "40-60", y: ["60-76", "76-108", "108-120", "120-168"] },
+        { kat: "Hız Terimleri", s: "'Adagio' hız terimi hangi BPM aralığını temsil eder?", d: "60-76", y: ["40-60", "76-108", "108-120", "168-192"] },
+        { kat: "Hız Terimleri", s: "'Andante' hız terimi hangi BPM aralığını temsil eder?", d: "76-108", y: ["60-76", "108-120", "120-168", "192-208"] },
+        { kat: "Hız Terimleri", s: "'Moderato' hız terimi hangi BPM aralığını temsil eder?", d: "108-120", y: ["76-108", "120-168", "40-60", "192-208"] },
+        { kat: "Hız Terimleri", s: "'Allegro' hız terimi hangi BPM aralığını temsil eder?", d: "120-168", y: ["108-120", "168-192", "76-108", "40-60"] },
+        { kat: "Hız Terimleri", s: "'Presto' hız terimi hangi BPM aralığını temsil eder?", d: "168-192", y: ["120-168", "192-208", "108-120", "60-76"] },
+        { kat: "Hız Terimleri", s: "'Prestissimo' hız terimi hangi BPM aralığını temsil eder?", d: "192-208", y: ["168-192", "120-168", "40-60", "76-108"] },
+
+        // Tarihsel Enstrümanlar Kategorisi [cite: 55, 64-66, 89-114]
+        { kat: "Gitar Tarihi", s: "Antik Mısır'da görülen ve gitara benzerliğiyle dikkat çeken çalgı hangisidir?", d: "Nefer", y: ["Pandora", "Hitit Çalgısı", "Kithara", "Vihuela"] },
+        { kat: "Gitar Tarihi", s: "Hititlere ait taş kabartmalarda görülen çalgının adı nedir?", d: "Hitit Çalgısı", y: ["Nefer", "Pandora", "Lavta", "Barok Gitar"] },
+        { kat: "Gitar Tarihi", s: "Antik Yunan kültürüne ait üç telli kordofon hangisidir?", d: "Pandora", y: ["Kithara", "Nefer", "Ut", "Lavta"] },
+        { kat: "Gitar Tarihi", s: "Endülüs ve Haçlı Seferleri ile Avrupa'ya taşınan enstrüman hangisidir?", d: "Lavta", y: ["Romantik Gitar", "Piyano", "Arp", "Lir"] },
+        { kat: "Gitar Tarihi", s: "15. ve 16. yüzyılda İspanya'da yaygın olan çalgı hangisidir?", d: "Vihuela", y: ["Barok Gitar", "Rönesans Gitarı", "Ut", "Torres Gitarı"] },
+        { kat: "Gitar Tarihi", s: "17. yüzyılda saraylarda çalınan beş çift telli gitar türü hangisidir?", d: "Barok Gitar", y: ["Romantik Gitar", "Torres Gitarı", "Vihuela", "Elektro Gitar"] },
+        { kat: "Gitar Tarihi", s: "18. yüzyıl sonunda 6 tek telli sisteme geçilerek doğan gitar hangisidir?", d: "Romantik Gitar", y: ["Barok Gitar", "Bas Gitar", "Torres Gitarı", "Vihuela"] },
+        { kat: "Gitar Tarihi", s: "Modern klasik gitarın standart yapısını 19. yüzyılda kim oluşturmuştur?", d: "Antonio de Torres", y: ["Julian Arcas", "Les Paul", "George Beauchamp", "Paul Tutmarc"] },
+        { kat: "Gitar Tarihi", s: "İlk elektro gitar kim tarafından icat edilmiştir?", d: "George Beauchamp", y: ["Les Paul", "Antonio de Torres", "Paul Tutmarc", "Tolgahan Çoğulu"] },
+        { kat: "Gitar Tarihi", s: "Modern bas gitarın geliştirilmesine öncülük eden mucit kimdir?", d: "Paul Tutmarc", y: ["George Beauchamp", "Les Paul", "August Otto", "Jakop August"] },
+        { kat: "Gitar Tarihi", s: "2009 yılında mikrotonal gitarı geliştiren müzisyenimiz kimdir?", d: "Tolgahan Çoğulu", y: ["Hulyan Arkas", "Viktor Maiyon", "Erik Morits", "Sultan Lavta"] }
+    ];
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function sesCal(dogru) {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        if (dogru) {
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // İnce ses
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        } else {
+            osc.frequency.setValueAtTime(220, audioCtx.currentTime); // Kalın ses
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        }
+    }
+
+    function oyunuBaslat() {
+        initAudio();
+        document.getElementById('overlay').style.display = 'none';
+        puan = 0; hak = 3;
+        document.getElementById('puan').innerText = puan;
+        document.getElementById('hak').innerText = hak;
+        yeniSoru();
+    }
+
+    function yeniSoru() {
+        if (hak <= 0) return;
+        clearInterval(zamanlayıcı);
+        süre = 100;
+        document.getElementById('timer-bar').style.width = "100%";
+        document.getElementById('mesaj').innerText = "";
+
+        const soru = soruHavuzu[Math.floor(Math.random() * soruHavuzu.length)];
+        document.getElementById('kategori-etiketi').innerText = soru.kat;
+        document.getElementById('soru-metni').innerText = soru.s;
+
+        const alan = document.getElementById('siklar-alani');
+        alan.innerHTML = "";
+        let siklar = [soru.d, ...soru.y].sort(() => Math.random() - 0.5);
+
+        siklar.forEach(s => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-secenek';
+            btn.innerText = s;
+            btn.onclick = () => {
+                if (s === soru.d) {
+                    puan += 10;
+                    document.getElementById('puan').innerText = puan;
+                    document.getElementById('mesaj').innerText = "DOĞRU! ✅";
+                    document.getElementById('mesaj').style.color = "#2ecc71";
+                    sesCal(true);
+                } else {
+                    hak--;
+                    document.getElementById('hak').innerText = hak;
+                    document.getElementById('mesaj').innerText = "YANLIŞ! ❌";
+                    document.getElementById('mesaj').style.color = "#e94560";
+                    sesCal(false);
+                }
+                clearInterval(zamanlayıcı);
+                setTimeout(hak > 0 ? yeniSoru : oyunuBitir, 1200);
+            };
+            alan.appendChild(btn);
+        });
+
+        zamanlayıcı = setInterval(() => {
+            süre--;
+            document.getElementById('timer-bar').style.width = süre + "%";
+            if (süre <= 0) {
+                hak--;
+                document.getElementById('hak').innerText = hak;
+                sesCal(false);
+                if (hak > 0) yeniSoru(); else oyunuBitir();
+            }
+        }, 100);
+    }
+
+    function oyunuBitir() {
+        clearInterval(zamanlayıcı);
+        document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('overlay').innerHTML = `
+            <h1 style="color:#e94560">Oyun Bitti!</h1>
+            <p style="font-size:24px">Toplam Puan: ${puan}</p>
+            <button class="btn-main" onclick="location.reload()" style="margin-top:20px">YENİDEN DENE</button>
+        `;
+    }
+</script>
+</body>
+</html>
