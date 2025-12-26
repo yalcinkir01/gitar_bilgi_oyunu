@@ -108,6 +108,7 @@
     const restartBtn = document.getElementById('restart-btn');
 
     function initGame() {
+        SORU_BANKASI.sort(() => Math.random() - 0.5);
         currentIndex = 0;
         score = 0;
         gameArea.style.display = 'block';
