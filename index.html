@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gitar Teorisi ve Kültür Atlası</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a2e; color: white; text-align: center; margin: 0; padding: 10px; }
+        .container { max-width: 750px; margin: auto; background: #16213e; padding: 25px; border-radius: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); position: relative; min-height: 550px; }
+        
+        .header-panel { display: flex; justify-content: space-around; background: #0f3460; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .stat span { color: #ffba08; font-size: 24px; font-weight: bold; }
+
+        #soru-alani { background: #0f3460; padding: 30px; border-radius: 20px; margin-bottom: 20px; border: 3px solid #e94560; min-height: 160px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+        #kategori-etiketi { font-size: 14px; color: #4eeaf6; text-transform: uppercase; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; }
+        #soru-metni { font-size: 22px; font-weight: bold; line-height: 1.5; }
+
+        #timer-container { position: absolute; bottom: 0; left: 0; width: 100%; height: 10px; background: #222; }
+        #timer-bar { height: 100%; width: 100%; background: #4eeaf6; transition: width 0.1s linear; }
+
+        .options-container { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 500px) { .options-container { grid-template-columns: 1fr 1fr; } }
+        
+        .btn-secenek { padding: 16px; font-size: 18px; font-weight: bold; cursor: pointer; border: 2px solid #533483; border-radius: 12px; background: #1f4068; color: white; transition: 0.2s; }
+        .btn-secenek:hover:not(:disabled) { background: #e94560; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(233, 69, 96, 0.3); }
+        .btn-secenek:disabled { opacity: 0.6; }
+
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 26, 46, 0.98); z-index: 1000; border-radius: 25px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .btn-main { padding: 20px 60px; font-size: 28px; background: #2ecc71; color: white; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3); }
+        .btn-finish { margin-top: 20px; background: #e94560; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="overlay">
+        <h1 style="color:#ffba08; font-size: 38px; margin-bottom: 10px;">Teori & Kültür Akademisi</h1>
+        <p style="margin-bottom: 30px; font-size: 18px;">Gitarın tarihini, şifrelerini ve ritmini keşfet!</p>
+        <button class="btn-main" onclick="oyunuBaslat()">BAŞLA</button>
+    </div>
+
+    <div class="header-panel">
+        <div class="stat">Puan: <span id="puan">0</span></div>
+        <div class="stat">Hak: <span id="hak">3</span></div>
+    </div>
+
+    <div id="soru-alani">
+        <div id="kategori-etiketi">Kategori</div>
+        <div id="soru-metni">Yükleniyor...</div>
+        <div id="timer-container"><div id="timer-bar"></div></div>
+    </div>
+
+    <div class="options-container" id="siklar-alani"></div>
+    <div id="mesaj" style="margin-top:20px; font-weight:bold; min-height: 25px;"></div>
+
+    <button class="btn-finish" onclick="oyunuBitir()">OYUNU BİTİR</button>
+</div>
+
+<script>
+    let puan = 0, hak = 3, soruIndex = 0, süre = 100, zamanlayıcı;
+    
+    const soruHavuzu = [
+        // Kültürel Köken Kategorisi
+        { kat: "Kültür Atlası", s: "Antik Mısır kültürüne ait duvar resimlerinde görülen en eski kordofonlardan biri hangisidir?", d: "Nefer", y: ["Pandora", "Lavta", "Vihuela", "Kithara"] },
+        { kat: "Kültür Atlası", s: "Antik Yunan kültürüne ait heykellerde görülen üç telli çalgı hangisidir?", d: "Pandora", y: ["Nefer", "Ut", "Rönesans Gitarı", "Barok Gitar"] },
+        { kat: "Kültür Atlası", s: "Gitar günümüzde hangi toplumun 'halk çalgısı' olarak kabul edilmektedir?", d: "İspanya
