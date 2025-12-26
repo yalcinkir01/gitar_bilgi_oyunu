@@ -41,14 +41,16 @@
 
         button.option-btn {
             padding: 15px; border: 2px solid #dee2e6; border-radius: 10px;
-            background: white; font-size: 1rem; cursor: pointer;
+            background: white !important; /* Mobilde temiz renk için */
+            color: #333; font-size: 1rem; cursor: pointer;
             text-align: left; transition: 0.2s;
             -webkit-tap-highlight-color: transparent; outline: none;
+            user-select: none;
         }
 
-        /* Renk Durumları */
-        button.option-btn.correct { background: var(--success) !important; color: white; border-color: var(--success); }
-        button.option-btn.wrong { background: var(--danger) !important; color: white; border-color: var(--danger); }
+        /* Renk Durumları - !important mobildeki 'yapışkan' renkleri ezer */
+        button.option-btn.correct { background: var(--success) !important; color: white !important; border-color: var(--success); }
+        button.option-btn.wrong { background: var(--danger) !important; color: white !important; border-color: var(--danger); }
 
         .controls { margin-top: 20px; }
         #next-btn, #restart-btn {
@@ -67,7 +69,7 @@
     <div id="game-area">
         <div class="header">
             <span id="type-badge" class="type-badge">Ünite 1</span>
-            <span id="progress">1/35</span>
+            <span id="progress">Yükleniyor...</span>
         </div>
         <div id="question-text">Soru yükleniyor...</div>
         <div id="options" class="options-container"></div>
@@ -92,7 +94,6 @@
         { type: "TEST", q: "Gitar klavyesinde mi-fa ve si-do aralıkları kaç ses mesafededir?", options: ["Tam Ses", "Yarım Ses", "Çeyrek Ses", "İki Ses"], answer: "Yarım Ses" },
         { type: "TEST", q: "Akort ederken si notasına karşılık gelen harf hangisidir?", options: ["A", "B", "C", "D"], answer: "B" },
         { type: "TEST", q: "BPM birimi neyi belirlemek için kullanılır?", options: ["Ses Yüksekliği", "Eserin Hızı", "Tel Kalınlığı", "Nota Aralığı"], answer: "Eserin Hızı" }
-        // Diğer soruları buraya aynı formatta ekleyebilirsin
     ];
 
     let currentIndex = 0;
@@ -117,13 +118,13 @@
     }
 
     function loadQuestion() {
-        // Her şeyi sıfırla (Mobilde renk takılmasını önler)
         optionsEl.innerHTML = '';
         nextBtn.style.display = 'none';
         
         const soru = SORU_BANKASI[currentIndex];
         questionEl.innerText = soru.q;
         progressEl.innerText = `${currentIndex + 1} / ${SORU_BANKASI.length}`;
+        document.getElementById('type-badge').innerText = soru.type;
 
         soru.options.forEach(opt => {
             const btn = document.createElement('button');
@@ -135,23 +136,20 @@
     }
 
     function checkAnswer(btn, selected, correct) {
-    const buttons = document.querySelectorAll('.option-btn');
-    buttons.forEach(b => b.disabled = true);
-    
-    // Tıklandığı anda odaklanmayı kaldır (Mobil için kritik)
-    btn.blur(); 
+        const buttons = document.querySelectorAll('.option-btn');
+        btn.blur(); // Mobil odaklamayı temizle
+        
+        buttons.forEach(b => b.disabled = true);
 
-    if (selected === correct) {
-        btn.classList.add('correct');
-        score++;
-    } else {
-        btn.classList.add('wrong');
-        buttons.forEach(b => {
-            if (b.innerText === correct) b.classList.add('correct');
-        });
-    }
-    nextBtn.style.display = 'block';
-}
+        if (selected === correct) {
+            btn.classList.add('correct');
+            score++;
+        } else {
+            btn.classList.add('wrong');
+            buttons.forEach(b => {
+                if (b.innerText === correct) b.classList.add('correct');
+            });
+        }
         nextBtn.style.display = 'block';
     }
 
